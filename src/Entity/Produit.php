@@ -7,12 +7,18 @@ use App\Repository\ProduitRepository;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
+// use App\Validator\Constraints\MinimalProperties; // A custom constraint
+use Symfony\Component\Validator\Constraints as Assert; // Symfony's built-in constraints
 
 #[ORM\Entity(repositoryClass: ProduitRepository::class)]
 #[ORM\InheritanceType("JOINED")]
 #[ORM\DiscriminatorColumn(name:"type",type: "string")]
 #[ORM\DiscriminatorMap(["burger" => "Burger","complement" => "Complement","menu"=>"Menu"])]
 #[ApiResource(
+    attributes: [
+        "pagination_enabled" => true,
+        "pagination_items_per_page"=>5
+    ],
     //redefinition des ressources
     collectionOperations:[
         "get" =>[
@@ -34,9 +40,11 @@ class Produit
 
     #[Groups(["burger:read:simple"])]
     #[ORM\Column(type: 'string', length: 100)]
+    #[Assert\NotBlank]
     protected $nom;
 
     #[Groups(["burger:read:simple"])]
+    #[Assert\NotBlank()]
     #[ORM\Column(type: 'float')]
     protected $prix;
 

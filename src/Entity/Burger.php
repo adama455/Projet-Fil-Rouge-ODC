@@ -18,9 +18,21 @@ use Symfony\Component\HttpFoundation\Response;
             'normalization_context' =>['groups' => ['burger:read:simple']],
         ],
 
-        "post"],
+        "post" => [
+            "security" => "is_granted('ROLE_GESTIONNAIRE')",
+            "security_message" => "Seul les Gestionnaires peuvent Ajouter des Burgers."
+        ],
 
-    itemOperations:["put","get"]
+    ],
+
+    itemOperations:[
+        "put"=> [
+            "security" => "is_granted('ROLE_GESTIONNAIRE')",
+            "security_message" => "Seul les Gestionnaires peuvent Modifier des Burgers."
+        ],
+    
+        "get"
+    ]
 )]
 class Burger extends Produit
 {

@@ -12,12 +12,17 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Validator\Constraints as Assert; // Symfony's built-in constraints
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\InheritanceType("JOINED")]
 #[ORM\DiscriminatorColumn(name:"role",type: "string")]
 #[ORM\DiscriminatorMap(["client" => "Client","gestionnaire" => "Gestionnaire","livreur"=>"Livreur"])]
 #[ApiResource(
+    attributes: [
+        "pagination_enabled" => true,
+        "pagination_items_per_page"=>5
+    ],
     collectionOperations:[
         "get" =>[
             'method' => 'get',
@@ -41,22 +46,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'integer')]
     protected $id;
 
+    #[Groups(['user:read:simple'])]
     #[ORM\Column(type: 'string', length: 100)]
+    #[Assert\NotBlank()]
     protected $nom;
 
+    #[Groups(['user:read:simple'])]
     #[ORM\Column(type: 'string', length: 100)]
+    #[Assert\NotBlank()]
     protected $prenom;
-
+    
+    #[Groups(['user:read:simple'])]
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    // #[Assert\NotBlank()]
     protected $telephone;
 
     #[ORM\Column(type: 'json')]
     protected $roles = [];
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
+    #[Assert\NotBlank()]
+    #[Assert\Email()]
     protected $login;
 
     #[ORM\Column(type: 'string')]
+    // #[Assert\NotBlank()]
+    #[Assert\Length(min: 8, max: 12)]
     protected $password;
 
     #[ORM\Column(type: 'smallint', options:["default"=>1])]

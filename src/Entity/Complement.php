@@ -2,19 +2,33 @@
 
 namespace App\Entity;
 
-use App\Repository\ComplementRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\ComplementRepository;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\HttpFoundation\Response;
 
 #[ORM\Entity(repositoryClass: ComplementRepository::class)]
-class Complement
-{
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    private $id;
+#[ORM\InheritanceType("JOINED")]
+#[ORM\DiscriminatorColumn(name:"type",type: "string")]
+#[ORM\DiscriminatorMap(["frite" => "Frite","boisson" => "Boisson"])]
+#[ApiResource(
+    attributes: [
+        "pagination_enabled" => true,
+        "pagination_items_per_page"=>5
+    ],
+    //redefinition des ressources
+    collectionOperations:[
+        "get" =>[
+            'method' => 'get',
+            'status' => Response::HTTP_OK,
+            'normalization_context' =>['groups' => ['burger:read:simple']],
+        ],
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+        "post"],
+
+    itemOperations:["put","get"]
+)]
+class Complement extends Produit
+{
+    
 }

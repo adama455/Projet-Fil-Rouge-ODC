@@ -10,11 +10,15 @@ use Symfony\Component\HttpFoundation\Response;
 
 #[ORM\Entity(repositoryClass: LivreurRepository::class)]
 #[ApiResource(
+    attributes: [
+        "pagination_enabled" => true,
+        "pagination_items_per_page"=>5
+    ],
     collectionOperations:[
     "get" =>[
         'method' => 'get',
         'status' => Response::HTTP_OK,
-        'normalization_context' =>['groups' => ['burger:read:simple']],
+        'normalization_context' =>['groups' => ['user:read:simple']],
     ],
 
     "post"],
@@ -46,5 +50,12 @@ class Livreur extends User
         $this->matriculeMoto = $matriculeMoto;
 
         return $this;
+    }
+    public function getRoles(): array
+    {
+        $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_LIVREUR';
+        return array_unique($roles);
     }
 }

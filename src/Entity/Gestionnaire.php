@@ -11,11 +11,15 @@ use Symfony\Component\HttpFoundation\Response;
 
 #[ORM\Entity(repositoryClass: GestionnaireRepository::class)]
 #[ApiResource(
+    attributes: [
+        "pagination_enabled" => true,
+        "pagination_items_per_page"=>5
+    ],
     collectionOperations:[
         "get" =>[
             'method' => 'get',
             'status' => Response::HTTP_OK,
-            'normalization_context' =>['groups' => ['burger:read:simple']],
+            'normalization_context' =>['groups' => ['user:read:simple']],
         ],
 
         "post"],
@@ -24,6 +28,9 @@ use Symfony\Component\HttpFoundation\Response;
 )]
 class Gestionnaire extends User
 {
+    // public function __construct(){
+    //     $this->roles=["ROLES_GESTIONNAIRE"];
+    // }
     // #[ORM\Id]
     // #[ORM\GeneratedValue]
     // #[ORM\Column(type: 'integer')]
