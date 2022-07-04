@@ -6,8 +6,10 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
+use App\Controller\MailController;
 use Symfony\Component\HttpFoundation\Response;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\SerializedName;
@@ -24,6 +26,12 @@ use Symfony\Component\Validator\Constraints as Assert; // Symfony's built-in con
         "pagination_items_per_page"=>5
     ],
     collectionOperations:[
+        "patch"=>[
+            'method'=>'PATCH',
+            'deserialize'=>false,
+            'path' => 'user/validate/{token}',
+            'controller'=> MailController::class
+        ],
         "get" =>[
             'method' => 'get',
             'status' => Response::HTTP_OK,
@@ -33,40 +41,48 @@ use Symfony\Component\Validator\Constraints as Assert; // Symfony's built-in con
             "method"=>"post",
             'status' => Response::HTTP_CREATED,
             'path'=>'register/',
-            'denormalization_context' => ['groups' => ['user:write']],
-            'normalization_context' => ['groups' => ['user:read:simple']]
+            // 'denormalization_context' => ['groups' => ['user:write']],
+            'normalization_context' => ['groups' => ['user:write:simple']]
         ],
+        // validation de l'utilisateur apres click sur token
+        
+    ],
+    itemOperations: [
+        "get",
+        "put"
     ]
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    #[Groups(['user:read:simple'])]
+    #[Groups(['user:read:simple','user:write:simple'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     protected $id;
 
-    #[Groups(['user:read:simple'])]
+    #[Groups(['user:read:simple','user:write:simple'])]
     #[ORM\Column(type: 'string', length: 100)]
-    #[Assert\NotBlank()]
+    #[Assert\NotBlank(['message' => 'nom obligatoire',])]
     protected $nom;
 
-    #[Groups(['user:read:simple'])]
+    #[Groups(['user:read:simple','user:write:simple'])]
     #[ORM\Column(type: 'string', length: 100)]
-    #[Assert\NotBlank()]
+    #[Assert\NotBlank(['message' => 'prénom obligatoire',])]
     protected $prenom;
     
-    #[Groups(['user:read:simple'])]
+    #[Groups(['user:read:simple','user:write:simple'])]
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
     // #[Assert\NotBlank()]
     protected $telephone;
 
+    #[Groups(['user:write:simple'])]
     #[ORM\Column(type: 'json')]
     protected $roles = [];
 
+    #[Groups(['user:read:simple','user:write:simple'])]
     #[ORM\Column(type: 'string', length: 180, unique: true)]
-    #[Assert\NotBlank()]
-    #[Assert\Email()]
+    #[Assert\NotBlank(['message' => 'email obligatoire',])]
+    #[Assert\Email(['message' => 'email non valide',])]
     protected $login;
 
     #[ORM\Column(type: 'string')]
@@ -80,11 +96,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Produit::class)]
     protected $produits;
 
+    #[Groups(['user:read:simple','user:write:simple'])]
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     protected $token;
 
-    #[ORM\Column(type: 'boolean', nullable: true)]
-    protected $isEnable;
+    #[ORM\Column(type: 'boolean',options:["default"=>false])]
+    protected $isEnable=false;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
     protected $expireAt;
@@ -96,6 +113,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->produits = new ArrayCollection();
+        // $this->isEnabled = false;
+        $this->generateToken();
+        $this->etat=1;
     }
 
     public function getId(): ?int
@@ -155,7 +175,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): self
     {
         $this->password = $password;
-
         return $this;
     }
 
@@ -290,7 +309,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPlainPassword(?string $plainPassword): self
     {
         $this->plainPassword = $plainPassword;
-
         return $this;
+    }
+    public function generateToken(){
+        $this->expireAt = new \DateTime("+1 day");
+        $this->token =bin2hex(openssl_random_pseudo_bytes(64));
+    }
+    // Generer Role des utilisateur
+    public function generateRole(){
+        $table=get_called_class();
+        $table=explode('\\',$table);
+        $table= strtoupper($table[2]);
+        $this->roles[]='ROLE_'.$table;
     }
 }

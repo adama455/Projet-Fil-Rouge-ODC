@@ -1,62 +1,62 @@
 <?php
-
 namespace App\Entity;
-
-use App\Entity\User;
+use App\Entity\Livreur;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use App\Repository\ClientRepository;
+use App\Repository\LivraisonRepository;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\HttpFoundation\Response;
 
-#[ORM\Entity(repositoryClass: ClientRepository::class)]
+#[ORM\Entity(repositoryClass: LivraisonRepository::class)]
 #[ApiResource(
     attributes: [
         "pagination_enabled" => true,
         "pagination_items_per_page"=>5
     ],
+    //redefinition des ressources
     collectionOperations:[
         "get" =>[
             'method' => 'get',
             'status' => Response::HTTP_OK,
-            'normalization_context' =>['groups' => ['user:read:simple']],
+            'normalization_context' =>['groups' => ['burger:read:simple']],
         ],
 
-        "post"=>[ 
-            'normalization_context' =>['groups' => ['user:write:simple']]
-        ]
-            
-    ],
-
+        "post"],
     itemOperations:["put","get"]
 )]
-class Client extends User
+class Livraison
 {
-    #[ORM\Column(type: 'string', length: 100)]
-    private $adresse;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private $id;
 
-    #[ORM\OneToMany(mappedBy: 'client', targetEntity: Commande::class)]
+    #[ORM\ManyToOne(targetEntity: Livreur::class, inversedBy: 'livraisons')]
+    #[ORM\JoinColumn(nullable: false)]
+    private $Livreur;
+
+    #[ORM\OneToMany(mappedBy: 'livraison', targetEntity: Commande::class)]
     private $commandes;
 
     public function __construct()
     {
-        parent::__construct();
         $this->commandes = new ArrayCollection();
     }
 
-    // public function __construct(){
-    //     $this->roles=["ROLES_CLIENT"];
-    // }
-
-    public function getAdresse(): ?string
+    public function getId(): ?int
     {
-        return $this->adresse;
+        return $this->id;
     }
 
-    public function setAdresse(string $adresse): self
+    public function getLivreur(): ?Livreur
     {
-        $this->adresse = $adresse;
+        return $this->Livreur;
+    }
+
+    public function setLivreur(?Livreur $Livreur): self
+    {
+        $this->Livreur = $Livreur;
 
         return $this;
     }
@@ -73,7 +73,7 @@ class Client extends User
     {
         if (!$this->commandes->contains($commande)) {
             $this->commandes[] = $commande;
-            $commande->setClient($this);
+            $commande->setLivraison($this);
         }
 
         return $this;
@@ -83,8 +83,8 @@ class Client extends User
     {
         if ($this->commandes->removeElement($commande)) {
             // set the owning side to null (unless already changed)
-            if ($commande->getClient() === $this) {
-                $commande->setClient(null);
+            if ($commande->getLivraison() === $this) {
+                $commande->setLivraison(null);
             }
         }
 
