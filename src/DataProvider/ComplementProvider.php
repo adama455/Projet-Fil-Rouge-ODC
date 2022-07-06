@@ -1,7 +1,7 @@
 <?php
 // src/DataPersister/DataPersister.php
 
-namespace App\DataPersister;
+namespace App\DataProvider;
 
 use App\Entity\Complements;
 use App\Repository\BoissonRepository;

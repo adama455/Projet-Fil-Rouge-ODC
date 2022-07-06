@@ -7,8 +7,11 @@ namespace App\DataPersister;
 // use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
 use App\Entity\Menu;
 use App\Entity\Produit;
+// use App\Entity\Commande;
 use Doctrine\ORM\EntityManagerInterface;
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
+use App\Services\PrixMenu;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
@@ -22,9 +25,11 @@ class ProduitDataPersister implements DataPersisterInterface
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        TokenStorageInterface $token
+        TokenStorageInterface $token,
+        PrixMenu $prixMenu
     ) {
         $this->entityManager = $entityManager;
+        $this->prixMenu = $prixMenu;
         $this->token = $token->getToken();
     }
     
@@ -39,10 +44,13 @@ class ProduitDataPersister implements DataPersisterInterface
     public function persist($data)
     {
         if ($data instanceof Menu) {
-            $prixMenu=$data->prixMenu($data);
-            $data->setPrix($prixMenu);
+            $data->setPrix($this->prixMenu->getPrix($data));
+            // dd($this->prixMenu->getPrix($data));
+            // $prixMenu=$data->prixMenu($data);
+            // $data->setPrix($prixMenu);
+            // dd($prixMenu);
         }
-        // dd($this->token);
+        
         $data->setUser($this->token->getUser());
         $this->entityManager->persist($data);
         $this->entityManager->flush();

@@ -1,7 +1,7 @@
 <?php
 // src/DataPersister/DataPersister.php
 
-namespace App\DataPersister;
+namespace App\DataProvider;
 
 use App\Entity\Catalogue;
 use App\Repository\MenuRepository;
@@ -25,8 +25,8 @@ class CatalogueProvider implements ContextAwareCollectionDataProviderInterface, 
     {
         // dd($context[]=$this->burgerR->findAll());
         return $context=[
-            $this->burgerR->finByEtat(),
-            $this->menuR->findyByEtat()
+            $this->burgerR->findAll(),
+            $this->menuR->findAll()
 
         ];
 

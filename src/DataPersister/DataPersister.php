@@ -66,7 +66,6 @@ class DataPersister implements ContextAwareDataPersisterInterface
             $data->setGestionnaire($this->token->getUser());
         }
 
-
         // $this->_mailerService->sendEmail($data);
         $data->generateRole();
         $this->_entityManager->persist($data);

@@ -24,6 +24,8 @@ use Symfony\Component\HttpFoundation\Response;
             'normalization_context' =>['groups' => ['produit:read:simple']],
         ],
         "post"=> [
+            'denormalization_context' => ['groups' => ["produit:write",]],
+            'normalization_context' => ['groups' => ['produit:read:all']],
             "security_post_denormalize" => "is_granted('PRODUCT_CREAT', object)",
             "security_post_denormalize_message" => "Only gestionnaire can add burgers.",
             // 'normalization_context' =>['groups' => ['produit:write:simple']],
@@ -32,46 +34,54 @@ use Symfony\Component\HttpFoundation\Response;
 
     itemOperations:[
         "put"=> [
+            'denormalization_context' => ['groups' => ['write']],
             "security" => "is_granted('PRODUCT_EDIT', object)",
             "security_message" => "Only gestionnaire can edit boisson.",
         ],
 
-        "get"
+        "get" =>[
+            'method' => 'get',
+            'status' => Response::HTTP_OK,
+            'normalization_context' =>['groups' => ['produit:read:simple']],
+        ],
     ]
 )]
 class Burger extends Produit
 {
-    #[ORM\ManyToMany(targetEntity: Menu::class, mappedBy: 'burgers')]
-    private $menus;
+    #[ORM\OneToMany(mappedBy: 'burger', targetEntity: MenuBurger::class)]
+    private $menuBurgers;
 
     public function __construct()
     {
         parent::__construct();
-        $this->menus = new ArrayCollection();
+        $this->menuBurgers = new ArrayCollection();
     }
 
     /**
-     * @return Collection<int, Menu>
+     * @return Collection<int, MenuBurger>
      */
-    public function getMenus(): Collection
+    public function getMenuBurgers(): Collection
     {
-        return $this->menus;
+        return $this->menuBurgers;
     }
 
-    public function addMenu(Menu $menu): self
+    public function addMenuBurger(MenuBurger $menuBurger): self
     {
-        if (!$this->menus->contains($menu)) {
-            $this->menus[] = $menu;
-            $menu->addBurger($this);
+        if (!$this->menuBurgers->contains($menuBurger)) {
+            $this->menuBurgers[] = $menuBurger;
+            $menuBurger->setBurger($this);
         }
 
         return $this;
     }
 
-    public function removeMenu(Menu $menu): self
+    public function removeMenuBurger(MenuBurger $menuBurger): self
     {
-        if ($this->menus->removeElement($menu)) {
-            $menu->removeBurger($this);
+        if ($this->menuBurgers->removeElement($menuBurger)) {
+            // set the owning side to null (unless already changed)
+            if ($menuBurger->getBurger() === $this) {
+                $menuBurger->setBurger(null);
+            }
         }
 
         return $this;

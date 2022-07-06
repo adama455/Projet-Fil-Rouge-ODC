@@ -5,7 +5,10 @@ namespace App\DataPersister;
 
 // use App\Entity\User;
 // use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
+
 use App\Entity\Commande;
+use App\Services\PrixCommande;
+use App\Entity\LigneDeCommande;
 use Doctrine\ORM\EntityManagerInterface;
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -21,12 +24,12 @@ class CommandeDataPersister implements DataPersisterInterface
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        TokenStorageInterface $token
+        TokenStorageInterface $token,
+        
     ) {
         $this->entityManager = $entityManager;
         $this->token = $token->getToken();
     }
-    
     public function supports($data): bool
     {
         return $data instanceof Commande;
@@ -37,7 +40,16 @@ class CommandeDataPersister implements DataPersisterInterface
      */
     public function persist($data)
     {
-        // dd($this->token);
+        $lignCmdes = $data->getLigneDeCommandes();
+        foreach ($lignCmdes as $lignCmde) {
+            $QteCmde=$lignCmde->getQuantiteCmde();
+            $pU=$lignCmde->getProduit()->getPrix();
+            $prixTotalLCmde = $QteCmde*$pU;
+            $lignCmde->setPrixLCmde($prixTotalLCmde) ;   
+           //    dd($prixTotalLCmde);
+        }
+        // $data->setPrixCommande($lignCmde->setPrixLCmde($prixTotalLCmde));
+        
         $data->setClient($this->token->getUser());
         $this->entityManager->persist($data);
         $this->entityManager->flush();

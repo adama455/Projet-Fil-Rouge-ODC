@@ -2,12 +2,13 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use App\Repository\TailleRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-use Symfony\Component\Validator\Constraints as Assert; // Symfony's built-in constraints
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\TailleRepository;
+use Doctrine\Common\Collections\Collection;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert; // Symfony's built-in constraints
 
 #[ORM\Entity(repositoryClass: TailleRepository::class)]
 #[ApiResource(
@@ -15,6 +16,8 @@ use Doctrine\ORM\Mapping as ORM;
         "get",
 
         "post" => [
+            'denormalization_context' => ['groups' => ['produit:write']],
+            'normalization_context' => ['groups' => ['produit:read:all']],
             "security_post_denormalize" => "is_granted('POST_CREAT', object)",
             "security_post_denormalize_message" => "Only gestionnaire can add taille.",
         ],
@@ -24,32 +27,47 @@ use Doctrine\ORM\Mapping as ORM;
         "put"=> [
             "security" => "is_granted('POST_EDIT', object)",
             "security" => "Only gestionnaire can edit taille.",
+            'denormalization_context' => ['groups' => ['write']],
         ],
-    
+        
         "get"
-    ]
-)]
+        ]
+        )]
 class Taille
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(["produit:read:all"])]
     private $id;
 
     #[Assert\NotNull(['message' => 'nom taille obligatoire.'])]
     #[ORM\Column(type: 'string', length: 100)]
+    #[Groups(['produit:write',"produit:read:all"])]
     private $nom;
 
     #[ORM\Column(type: 'smallint',options:["default"=>1])]
     private $etat;
 
-    #[ORM\ManyToMany(targetEntity: Boisson::class, inversedBy: 'tailles')]
-    private $boissons;
+    // #[ORM\ManyToMany(targetEntity: Boisson::class, inversedBy: 'tailles')]
+    // private $boissons;
+
+    #[ORM\OneToMany(mappedBy: 'taille', targetEntity: MenuTaille::class)]
+    private $menuTailles;
+
+    #[ORM\OneToMany(mappedBy: 'taille', targetEntity: TailleBoisson::class)]
+    private $tailleBoissons;
+
+    #[ORM\Column(type: 'integer')]
+    #[Groups(["produit:write","produit:read:all"])]
+    private $prix;
 
     public function __construct()
     {
-        $this->boissons = new ArrayCollection();
         $this->etat=1;
+        $this->menus = new ArrayCollection();
+        $this->menuTailles = new ArrayCollection();
+        $this->tailleBoissons = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -81,26 +99,98 @@ class Taille
         return $this;
     }
 
+    // /**
+    //  * @return Collection<int, Boisson>
+    //  */
+    // public function getBoissons(): Collection
+    // {
+    //     return $this->boissons;
+    // }
+
+    // public function addBoisson(Boisson $boisson): self
+    // {
+    //     if (!$this->boissons->contains($boisson)) {
+    //         $this->boissons[] = $boisson;
+    //     }
+
+    //     return $this;
+    // }
+
+    // public function removeBoisson(Boisson $boisson): self
+    // {
+    //     $this->boissons->removeElement($boisson);
+
+    //     return $this;
+    // }
+
     /**
-     * @return Collection<int, Boisson>
+     * @return Collection<int, MenuTaille>
      */
-    public function getBoissons(): Collection
+    public function getMenuTailles(): Collection
     {
-        return $this->boissons;
+        return $this->menuTailles;
     }
 
-    public function addBoisson(Boisson $boisson): self
+    public function addMenuTaille(MenuTaille $menuTaille): self
     {
-        if (!$this->boissons->contains($boisson)) {
-            $this->boissons[] = $boisson;
+        if (!$this->menuTailles->contains($menuTaille)) {
+            $this->menuTailles[] = $menuTaille;
+            $menuTaille->setTaille($this);
         }
 
         return $this;
     }
 
-    public function removeBoisson(Boisson $boisson): self
+    public function removeMenuTaille(MenuTaille $menuTaille): self
     {
-        $this->boissons->removeElement($boisson);
+        if ($this->menuTailles->removeElement($menuTaille)) {
+            // set the owning side to null (unless already changed)
+            if ($menuTaille->getTaille() === $this) {
+                $menuTaille->setTaille(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, TailleBoisson>
+     */
+    public function getTailleBoissons(): Collection
+    {
+        return $this->tailleBoissons;
+    }
+
+    public function addTailleBoisson(TailleBoisson $tailleBoisson): self
+    {
+        if (!$this->tailleBoissons->contains($tailleBoisson)) {
+            $this->tailleBoissons[] = $tailleBoisson;
+            $tailleBoisson->setTaille($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTailleBoisson(TailleBoisson $tailleBoisson): self
+    {
+        if ($this->tailleBoissons->removeElement($tailleBoisson)) {
+            // set the owning side to null (unless already changed)
+            if ($tailleBoisson->getTaille() === $this) {
+                $tailleBoisson->setTaille(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getPrix(): ?int
+    {
+        return $this->prix;
+    }
+
+    public function setPrix(int $prix): self
+    {
+        $this->prix = $prix;
 
         return $this;
     }
