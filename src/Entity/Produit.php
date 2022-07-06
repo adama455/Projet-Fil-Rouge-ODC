@@ -52,16 +52,16 @@ class Produit
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[Groups(["produit:read:simple","produit:read:all" ])]
+    #[Groups(["menu:write","produit:read:simple","produit:read:all" ])]
     #[ORM\Column(type: 'integer')]
     protected $id;
 
-    #[Groups(["produit:read:simple","produit:write","menu:write","produit:read:all","boisson" ])]
+    #[Groups(["produit:read:simple","produit:write","produit:read:all","boisson" ])]
     #[ORM\Column(type: 'string', length: 100)]
-    // #[Assert\NotBlank(['message' => 'le nom est obligatoire',])]
+    #[Assert\NotBlank(['message' => 'le nom est obligatoire',])]
     protected $nom;
 
-    #[Groups(["menu:write","produit:read:simple","produit:write","produit:read:all"])]
+    #[Groups(["produit:read:simple","produit:write","produit:read:all"])]
     #[Assert\NotBlank(['message' => 'le prix est obligatoire',])]
     #[ORM\Column(type: 'float')]
     protected $prix;
@@ -73,7 +73,7 @@ class Produit
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'produits')]
     private $user;
 
-    #[Groups(["menu:write","produit:write","produit:read:simple"])]
+    #[Groups(["produit:write","produit:read:simple"])]
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $description;
 

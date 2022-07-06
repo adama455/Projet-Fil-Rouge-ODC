@@ -38,7 +38,7 @@ class Taille
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(["produit:read:all"])]
+    #[Groups(["menu:write","produit:read:all"])]
     private $id;
 
     #[Assert\NotNull(['message' => 'nom taille obligatoire.'])]

@@ -23,6 +23,12 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
     ],
     //redefinition des ressources
     collectionOperations:[
+        'menu_produit' => [
+            'method' => 'POST',
+            'path' => '/menu2',
+            'controller' => MenuProduitController::class,
+            'read' => false,
+        ],
         "get" =>[
             'method' => 'get',
             'status' => Response::HTTP_OK,
@@ -54,6 +60,13 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 )]
 class Menu extends Produit
 {
+
+    #[Groups(['menu:write'])]
+    protected $nom;
+    
+    #[Groups(['menu:write'])]
+    protected $prix;
+
     #[ORM\OneToMany(mappedBy: 'menu', targetEntity: MenuBurger::class,cascade:['persist'])]
     #[Groups(['menu:write',"produit:read:all","produit:read:simple"])]
     #[SerializedName("burgers")]
