@@ -8,6 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Repository\MenuBurgerRepository;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert; // Symfony's built-in constraints
+
 
 #[ORM\Entity(repositoryClass: MenuBurgerRepository::class)]
 #[ApiResource()]
@@ -19,11 +21,20 @@ class MenuBurger
     private $id;
 
     #[ORM\Column(type: 'integer', nullable: true)]  
-    #[Groups(['menu:write',"produit:read:all","produit:read:simple"])]
+    #[Groups([
+        'menu:write',"produit:read:all",
+        "produit:read:simple",
+        "menu:read:all",'menu:read:simple'
+    ])]
     private $quatite;
 
+    #[Assert\NotNull(['message' => 'il faut au moins un burger .'])]
     #[ORM\ManyToOne(targetEntity: Burger::class, inversedBy: 'menuBurgers')]
-    #[Groups(['menu:write',"produit:read:all","produit:read:simple"])]
+    #[Groups([
+        'menu:write',"produit:read:all",
+        "produit:read:simple",
+        "menu:read:all",'menu:read:simple'
+    ])]
     private $burger;
 
     #[ORM\ManyToOne(targetEntity: Menu::class, inversedBy: 'menuBurgers')]

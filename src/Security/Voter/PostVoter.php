@@ -6,6 +6,7 @@ use App\Entity\Zone;
 use App\Entity\Taille;
 use App\Entity\Livreur;
 use App\Entity\Quartier;
+use App\Entity\Livraison;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -28,7 +29,8 @@ class PostVoter extends Voter
             && $subject instanceof Zone or
                 $subject instanceof Quartier or
                 $subject instanceof Livreur or
-                $subject instanceof Taille;
+                $subject instanceof Taille or
+                $subject instanceof Livraison;
     }
 
     protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token): bool

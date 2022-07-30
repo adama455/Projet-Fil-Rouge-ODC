@@ -2,7 +2,9 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\DBAL\Schema\Identifier;
 
 #[ApiResource(
     attributes: [
@@ -12,13 +14,23 @@ use ApiPlatform\Core\Annotation\ApiResource;
     collectionOperations:[
         "catalogue"=>[
             "method"=>"GET",
-            "path"=>"/catalogues"
-    
+            "path"=>"/catalogues",
+            'normalization_context'=>['groups' => ['produit:read:all']]
+        ],
+        "GET"=>[
+            'normalization_context'=>['groups' => ['catalogue:read:all']]
+
         ]
     ],
-    itemOperations:[]
+    itemOperations:[
+
+    ]
 )]
+
 class Catalogue
 {
-
+    #[ApiProperty(
+        identifier:true
+    )]
+    private $id;
 }

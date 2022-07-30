@@ -47,11 +47,11 @@ class Livreur extends User
     #[ORM\Column(type: 'string', length: 100)]
     private $matriculeMoto;
 
-    #[ORM\OneToMany(mappedBy: 'Livreur', targetEntity: Livraison::class)]
-    private $livraisons;
-
     #[ORM\ManyToOne(targetEntity: Gestionnaire::class, inversedBy: 'livreurs')]
     private $gestionnaire;
+
+    #[ORM\OneToMany(mappedBy: 'livreur', targetEntity: Livraison::class)]
+    private $livraisons;
 
     public function __construct()
     {
@@ -75,6 +75,19 @@ class Livreur extends User
 
         return $this;
     }
+
+    public function getGestionnaire(): ?Gestionnaire
+    {
+        return $this->gestionnaire;
+    }
+
+    public function setGestionnaire(?Gestionnaire $gestionnaire): self
+    {
+        $this->gestionnaire = $gestionnaire;
+
+        return $this;
+    }
+
     /**
      * @return Collection<int, Livraison>
      */
@@ -101,18 +114,6 @@ class Livreur extends User
                 $livraison->setLivreur(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getGestionnaire(): ?Gestionnaire
-    {
-        return $this->gestionnaire;
-    }
-
-    public function setGestionnaire(?Gestionnaire $gestionnaire): self
-    {
-        $this->gestionnaire = $gestionnaire;
 
         return $this;
     }

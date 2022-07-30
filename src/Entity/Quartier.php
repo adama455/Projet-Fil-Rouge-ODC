@@ -23,6 +23,8 @@ use Symfony\Component\Validator\Constraints as Assert; // Symfony's built-in con
             'normalization_context' =>['groups' => ['user:read:simple']]
         ],
         "post"=>[
+            'denormalization_context' =>['groups' => ['user:write']],
+            'normalization_context' =>['groups' => ['user:read:all']],
             "security_post_denormalize" => "is_granted('POST_CREAT', object)",
             "security_post_denormalize_message" => "Only gestionnaire can add quartier.",
         ]
@@ -35,25 +37,26 @@ use Symfony\Component\Validator\Constraints as Assert; // Symfony's built-in con
         "get"
     ]
 )]
-class Quartier  
+class Quartier
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[Groups(['user:read:simple'])]
+    #[Groups(['user:read:simple','user:read:all',])]
     #[ORM\Column(type: 'integer')]
     private $id;
     
     #[Assert\NotBlank(['message' => 'nom est obligatoire',])]
-    #[Groups(['user:read:simple'])]
+    #[Groups(['user:read:simple','user:write','user:read:all'])]
     #[ORM\Column(type: 'string', length: 100)]
     private $nom;
 
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
     #[Assert\NotBlank(['message' => 'la rue est obligatoire',])]
-    #[Groups(['user:read:simple'])]
+    #[Groups(['user:read:simple','user:write','user:read:all'])]
     private $rue;
 
     #[ORM\Column(type: 'smallint', options:["default"=>1])]
+    #[Groups(['user:read:simple','user:read:all'])]
     private $etat;
 
     #[ORM\ManyToOne(targetEntity: Zone::class, inversedBy: 'quartiers')]

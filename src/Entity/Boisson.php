@@ -31,8 +31,8 @@ use Symfony\Component\Validator\Constraints as Assert; // Symfony's built-in con
         ],
         "post"=> [
             // 'normalization_context' =>['groups' => ['produit:write:simple']],
-            'denormalization_context' => ['groups' => ['produit:write','boisson']],
-            'normalization_context' => ['groups' => ['produit:read:all']],
+            'denormalization_context' => ['groups' => ['boisson:write']],
+            'normalization_context' => ['groups' => ['boisson:read:all']],
             "security_post_denormalize" => "is_granted('PRODUCT_CREAT', object)",
             "security_post_denormalize_message" => "Only gestionnaire can add boissons."
         ],
@@ -55,7 +55,7 @@ use Symfony\Component\Validator\Constraints as Assert; // Symfony's built-in con
 class Boisson extends produit
 {
     #[ORM\OneToMany(mappedBy: 'boisson', targetEntity: TailleBoisson::class,cascade:['persist'])]
-    #[Groups(["produit:write","produit:read:all"])]
+    #[Groups(["boisson:write","boisson:read:all"])]
     #[SerializedName("tailles")]
     private $tailleBoissons;
 
@@ -155,4 +155,11 @@ class Boisson extends produit
 
         return $this;
     }
+    // public function getPrix(): ?float
+    // {
+    //     foreach ($this->getTailleBoissons() as $tailleBoisson) {
+    //         $prixb = $tailleBoisson->getPrixBoisson() * getTailleBoissons();
+    //     }
+    //     return $this->prix = $this->$prixb * ;
+    // }
 }

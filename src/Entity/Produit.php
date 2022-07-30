@@ -10,9 +10,10 @@ use Symfony\Component\HttpFoundation\Response;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use Symfony\Component\HttpFoundation\File\File;
 use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Component\Validator\Mapping\ClassMetadata;
-// use App\Validator\Constraints\MinimalProperties; // A custom constraint
 use Symfony\Component\Serializer\Annotation\Groups;
+// use App\Validator\Constraints\MinimalProperties; // A custom constraint
+use Symfony\Component\Validator\Mapping\ClassMetadata;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert; // Symfony's built-in constraints
 
 #[ORM\Entity(repositoryClass: ProduitRepository::class)]
@@ -52,19 +53,33 @@ class Produit
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[Groups(["menu:write","produit:read:simple","produit:read:all" ])]
+    #[Groups([
+        "menu:write","produit:read:simple",
+        "produit:read:all",'boisson:read:all',
+        "catalogue:read:all",
+        "menu:read:all",'menu:read:simple'
+    ])]
     #[ORM\Column(type: 'integer')]
     protected $id;
 
-    #[Groups(["produit:read:simple","produit:write","produit:read:all","boisson" ])]
+    #[Groups([
+        "produit:read:simple","produit:write",
+        "produit:read:all",'boisson:read:all',
+        'boisson:write',
+        "menu:read:all",'menu:read:simple'
+    ])]
     #[ORM\Column(type: 'string', length: 100)]
-    #[Assert\NotBlank(['message' => 'le nom est obligatoire',])]
+    // #[Assert\NotBlank(['message' => 'le nom est obligatoire',"catalogue:read:all"])]
     protected $nom;
 
-    #[Groups(["produit:read:simple","produit:write","produit:read:all"])]
-    #[Assert\NotBlank(['message' => 'le prix est obligatoire',])]
+    #[Groups([
+        "produit:read:simple","produit:write",
+        "produit:read:all","catalogue:read:all",
+        "menu:read:all",'menu:read:simple'
+    ])]
+    // #[Assert\NotBlank(['message' => 'le prix est obligatoire',])]
     #[ORM\Column(type: 'float')]
-    protected $prix;
+    protected $prix=0;
 
     #[ORM\Column(type: 'smallint',options:["default"=>1])]
     protected $etat;
@@ -73,7 +88,11 @@ class Produit
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'produits')]
     private $user;
 
-    #[Groups(["produit:write","produit:read:simple"])]
+    #[Groups(["produit:write","produit:read:simple",
+    'boisson:read:all','boisson:write',
+    "produit:read:all","catalogue:read:all",
+    "menu:read:all",'menu:read:simple'
+    ])]
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $description;
 
@@ -81,11 +100,24 @@ class Produit
     // #[ApiSubresource()]
     // private $commandes;
 
-    #[ORM\Column(type: 'object', nullable: true)]
-    protected $image;
-
     #[ORM\OneToMany(mappedBy: 'produit', targetEntity: LigneDeCommande::class)]
     private $ligneDeCommandes;
+
+    #[ORM\Column(type: 'blob', nullable: true)]
+    #[Groups([
+        "produit:read:simple","produit:read:all",
+        'boisson:read:all','boisson:write',
+        "catalogue:read:all",
+        "menu:read:all",'menu:read:simple'
+    ])]
+    private $image;
+
+    #[Groups([
+        "produit:write",'boisson:write',
+        "menu:write",
+    ])]
+    #[SerializedName("image")]
+    private $imageFile;
 
     public function __construct(File $file = null)
     {
@@ -95,7 +127,6 @@ class Produit
         $this->ligneDeCommandes = new ArrayCollection();
     }
 
-    #[Groups(["produit:read:simple","write" ])]
 
 
     public function getId(): ?int
@@ -190,28 +221,28 @@ class Produit
     //     return $this;
     // }
 
-    public function getImage(): ?object
+
+    public function getImage(): ?string
     {
-        return $this->image;
+        return is_resource($this->image) ? UTF8_decode(base64_encode(stream_get_contents($this->image))):$this->image; 
     }
 
-    public function setImage(?object $image): self
+    public function setImage($image): self
     {
         $this->image = $image;
 
         return $this;
     }
+    // public static function loadValidatorMetadata(ClassMetadata $metadata)
+    // {
+    //     $metadata->addPropertyConstraint('image', new Assert\Image([
+    //         'minWidth' => 200,
+    //         'maxWidth' => 400,
+    //         'minHeight' => 200,
+    //         'maxHeight' => 400,
+    //     ]));
 
-    public static function loadValidatorMetadata(ClassMetadata $metadata)
-    {
-        $metadata->addPropertyConstraint('image', new Assert\Image([
-            'minWidth' => 200,
-            'maxWidth' => 400,
-            'minHeight' => 200,
-            'maxHeight' => 400,
-        ]));
-
-    }
+    // }
 
     /**
      * @return Collection<int, LigneDeCommande>
@@ -242,5 +273,18 @@ class Produit
 
         return $this;
     }
+
+    public function getImageFile(): ?string
+    {
+        return $this->imageFile;
+    }
+
+    public function setImageFile(?string $imageFile): self
+    {
+        $this->imageFile = $imageFile;
+
+        return $this;
+    }
+
 
 }

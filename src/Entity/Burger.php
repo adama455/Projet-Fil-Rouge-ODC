@@ -12,10 +12,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 #[ORM\Entity(repositoryClass: BurgerRepository::class)]
 #[ApiResource(
-    attributes: [
-        "pagination_enabled" => true,
-        "pagination_items_per_page"=>5
-    ],
+    // attributes: [
+    //     "pagination_enabled" => true,
+    //     "pagination_items_per_page"=>5
+    // ],
     //redefinition des ressources
     collectionOperations:[
         "get" =>[

@@ -16,8 +16,8 @@ use Symfony\Component\Validator\Constraints as Assert; // Symfony's built-in con
         "get",
 
         "post" => [
-            'denormalization_context' => ['groups' => ['produit:write']],
-            'normalization_context' => ['groups' => ['produit:read:all']],
+            'denormalization_context' => ['groups' => ['taille:write']],
+            'normalization_context' => ['groups' => ['taille:read:all']],
             "security_post_denormalize" => "is_granted('POST_CREAT', object)",
             "security_post_denormalize_message" => "Only gestionnaire can add taille.",
         ],
@@ -38,29 +38,38 @@ class Taille
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(["menu:write","produit:read:all"])]
+    #[Groups(["taille:read:all",'taille:write'])]
     private $id;
 
     #[Assert\NotNull(['message' => 'nom taille obligatoire.'])]
     #[ORM\Column(type: 'string', length: 100)]
-    #[Groups(['produit:write',"produit:read:all"])]
+    #[Groups([
+        "taille:read:all",'taille:write',
+        "produit:read:all",
+        // 'menu:read:simple'
+    ])]
     private $nom;
 
     #[ORM\Column(type: 'smallint',options:["default"=>1])]
     private $etat;
 
-    // #[ORM\ManyToMany(targetEntity: Boisson::class, inversedBy: 'tailles')]
-    // private $boissons;
+    #[ORM\ManyToMany(targetEntity: Boisson::class, inversedBy: 'tailles')]
+    private $boissons;
 
+    // #[Groups(["produit:read:all"])]
     #[ORM\OneToMany(mappedBy: 'taille', targetEntity: MenuTaille::class)]
     private $menuTailles;
 
+    #[Groups([
+        "produit:read:all",
+        "menu:read:all",'menu:read:simple'
+        ])]
     #[ORM\OneToMany(mappedBy: 'taille', targetEntity: TailleBoisson::class)]
     private $tailleBoissons;
 
-    #[ORM\Column(type: 'integer')]
-    #[Groups(["produit:write","produit:read:all"])]
-    private $prix;
+    // #[ORM\Column(type: 'integer')]
+    // #[Groups(["menu:write","produit:read:all"])]
+    // private $prix;
 
     public function __construct()
     {
@@ -183,15 +192,15 @@ class Taille
         return $this;
     }
 
-    public function getPrix(): ?int
-    {
-        return $this->prix;
-    }
+    // public function getPrix(): ?int
+    // {
+    //     return $this->prix;
+    // }
 
-    public function setPrix(int $prix): self
-    {
-        $this->prix = $prix;
+    // public function setPrix(int $prix): self
+    // {
+    //     $this->prix = $prix;
 
-        return $this;
-    }
+    //     return $this;
+    // }
 }

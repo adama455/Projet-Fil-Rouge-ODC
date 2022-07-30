@@ -8,7 +8,7 @@ use App\Repository\MenuTailleRepository;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: MenuTailleRepository::class)]
-// #[ApiResource()]
+#[ApiResource()]
 class MenuTaille
 {
     #[ORM\Id]
@@ -20,11 +20,19 @@ class MenuTaille
     private $menu;
 
     #[ORM\ManyToOne(targetEntity: Taille::class, inversedBy: 'menuTailles')]
-    #[Groups(['menu:write',"produit:read:all"])]
+    #[Groups([
+        'menu:write',"produit:read:all",
+        "produit:read:simple",
+        'menu:read:all','menu:read:simple'
+    ])]
     private $taille;
 
     #[ORM\Column(type: 'integer')]
-    #[Groups(['menu:write',"produit:read:all"])]
+    #[Groups([
+        'menu:write',"produit:read:all",
+        "produit:read:simple",
+        'menu:read:all','menu:read:simple'
+    ])]
     private $quantite;
 
     public function getId(): ?int

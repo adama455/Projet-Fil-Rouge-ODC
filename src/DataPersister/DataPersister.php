@@ -5,6 +5,7 @@ namespace App\DataPersister;
 
 use App\Entity\User;
 use App\Entity\Livreur;
+use App\Entity\Livraison;
 use App\Services\MailerService;
 use Doctrine\ORM\EntityManagerInterface;
 use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
@@ -66,7 +67,7 @@ class DataPersister implements ContextAwareDataPersisterInterface
             $data->setGestionnaire($this->token->getUser());
         }
 
-        // $this->_mailerService->sendEmail($data);
+        $this->_mailerService->sendEmail($data);
         $data->generateRole();
         $this->_entityManager->persist($data);
         $this->_entityManager->flush();

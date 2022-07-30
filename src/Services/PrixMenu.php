@@ -15,17 +15,22 @@ class  PrixMenu
             $puB = $burger->getBurger()->getPrix();
             $prixMenu+=$puB*$qteB;
         }
-        foreach($tailleBoissons as $boisson ){
-            $puBo= $boisson-> getTaille()->getPrix();
-            $qteBo=$boisson->getQuantite();
-            $prixMenu+=$puBo*$qteBo;
-        }
+
+        // foreach($tailleBoissons as $boisson ){
+        //     foreach ($boisson-> getTaille()->getTailleBoissons() as $tailleB) {
+        //         $prixU = $tailleB->getPrixBoisson();
+        //         $puBo = $prixU;    // dd($prixU);
+        //     }
+        //     $qteBo=$boisson->getQuantite();
+        //     // dd($puBo*$qteBo);
+        //     $prixMenu+=$puBo*$qteBo;
+        // }
+
         foreach($frites as $frite ){
             $puF= $frite->getFrite()->getPrix();
             $qteF= $frite->getQuantite();
             $prixMenu+=$puF*$qteF;
-        }
-      
+        }  
         return $prixMenu;
     }
 }

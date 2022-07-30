@@ -20,11 +20,19 @@ class MenuFrite
     private $menu;
     
     #[ORM\ManyToOne(targetEntity: Frite::class, inversedBy: 'menuFrites')]
-    #[Groups(['menu:write',"produit:read:all","produit:read:simple"])]
+    #[Groups([
+        'menu:write',"produit:read:all",
+        "produit:read:simple",
+        "menu:read:all",'menu:read:simple'
+    ])]
     private $frite;
     
     #[ORM\Column(type: 'integer')]
-    #[Groups(['menu:write',"produit:read:all","produit:read:simple"])]
+    #[Groups([
+        'menu:write',"produit:read:all",
+        "produit:read:simple",
+        "menu:read:all",'menu:read:simple'
+    ])]
     private $quantite;
 
     public function getId(): ?int

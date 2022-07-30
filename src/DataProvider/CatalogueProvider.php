@@ -25,8 +25,8 @@ class CatalogueProvider implements ContextAwareCollectionDataProviderInterface, 
     {
         // dd($context[]=$this->burgerR->findAll());
         return $context=[
-            $this->burgerR->findAll(),
-            $this->menuR->findAll()
+            "burgers" => $this->burgerR->findByEtat(1),
+            "menus" =>$this->menuR->findByEtat(1)
 
         ];
 

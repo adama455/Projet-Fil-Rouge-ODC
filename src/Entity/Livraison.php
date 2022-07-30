@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Repository\LivraisonRepository;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: LivraisonRepository::class)]
 #[ApiResource(
@@ -22,7 +23,12 @@ use Symfony\Component\HttpFoundation\Response;
             'normalization_context' =>['groups' => ['burger:read:simple']],
         ],
 
-        "post"],
+        "post"=>[
+            'denormalization_context' =>['groups' => ['livraison:write']],
+            // "security_post_denormalize" => "is_granted('PRODUCT_CREAT', object)",
+            // "security_post_denormalize_message" => "Vous avez pas accés à cette ressouce!!.",
+        ]
+    ],
     itemOperations:["put","get"]
 )]
 class Livraison
@@ -32,16 +38,27 @@ class Livraison
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\ManyToOne(targetEntity: Livreur::class, inversedBy: 'livraisons')]
-    #[ORM\JoinColumn(nullable: false)]
-    private $Livreur;
+    #[ORM\OneToMany(mappedBy: 'livraison', targetEntity: Commande::class)]
+    #[Groups('livraison:write')]
+    private $commandes;
 
-    // #[ORM\OneToMany(mappedBy: 'livraison', targetEntity: Commande::class)]
-    // private $commandes;
+    #[ORM\Column(type: 'smallint', nullable: true,options:["default"=>1])]
+    private $etat;
+
+    #[ORM\ManyToOne(targetEntity: Livreur::class, inversedBy: 'livraisons')]
+    private $livreur;
+
+    #[ORM\ManyToOne(targetEntity: Gestionnaire::class, inversedBy: 'livraisons')]
+    private $gestionnaire;
+
+    #[ORM\ManyToOne(targetEntity: Zone::class, inversedBy: 'livraisons')]
+    #[Groups('livraison:write')]
+    private $zone;
 
     public function __construct()
     {
         $this->commandes = new ArrayCollection();
+        $this->etat = 1;
     }
 
     public function getId(): ?int
@@ -49,45 +66,87 @@ class Livraison
         return $this->id;
     }
 
-    public function getLivreur(): ?Livreur
+    /**
+     * @return Collection<int, Commande>
+     */
+    public function getCommandes(): Collection
     {
-        return $this->Livreur;
+        return $this->commandes;
     }
-
-    public function setLivreur(?Livreur $Livreur): self
+    public function setCommande(commande $commande): self
     {
-        $this->Livreur = $Livreur;
+        $this->commande = $commande;
 
         return $this;
     }
 
-    // /**
-    //  * @return Collection<int, Commande>
-    //  */
-    // public function getCommandes(): Collection
-    // {
-    //     return $this->commandes;
-    // }
+    public function addCommande(Commande $commande): self
+    {
+        if (!$this->commandes->contains($commande)) {
+            $this->commandes[] = $commande;
+            $commande->setLivraison($this);
+        }
 
-    // public function addCommande(Commande $commande): self
-    // {
-    //     if (!$this->commandes->contains($commande)) {
-    //         $this->commandes[] = $commande;
-    //         $commande->setLivraison($this);
-    //     }
+        return $this;
+    }
 
-    //     return $this;
-    // }
+    public function removeCommande(Commande $commande): self
+    {
+        if ($this->commandes->removeElement($commande)) {
+            // set the owning side to null (unless already changed)
+            if ($commande->getLivraison() === $this) {
+                $commande->setLivraison(null);
+            }
+        }
 
-    // public function removeCommande(Commande $commande): self
-    // {
-    //     if ($this->commandes->removeElement($commande)) {
-    //         // set the owning side to null (unless already changed)
-    //         if ($commande->getLivraison() === $this) {
-    //             $commande->setLivraison(null);
-    //         }
-    //     }
+        return $this;
+    }
 
-    //     return $this;
-    // }
+    public function getEtat(): ?int
+    {
+        return $this->etat;
+    }
+
+    public function setEtat(?int $etat): self
+    {
+        $this->etat = $etat;
+
+        return $this;
+    }
+
+    public function getLivreur(): ?Livreur
+    {
+        return $this->livreur;
+    }
+
+    public function setLivreur(?Livreur $livreur): self
+    {
+        $this->livreur = $livreur;
+
+        return $this;
+    }
+
+    public function getGestionnaire(): ?Gestionnaire
+    {
+        return $this->gestionnaire;
+    }
+
+    public function setGestionnaire(?Gestionnaire $gestionnaire): self
+    {
+        $this->gestionnaire = $gestionnaire;
+
+        return $this;
+    }
+
+    public function getZone(): ?Zone
+    {
+        return $this->zone;
+    }
+
+    public function setZone(?Zone $zone): self
+    {
+        $this->zone = $zone;
+
+        return $this;
+    }
 }

@@ -31,10 +31,13 @@ security:
     access_control:
         #- { path: ^/gestionnaire, roles: ROLE_GESTIONNAIRE }
         # - { path: ^/profile, roles: ROLE_USER }
-        - { path: ^/api/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api/register, roles: PUBLIC_ACCESS }
-        - { path: ^/api$, roles: PUBLIC_ACCESS }
-        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api, roles: PUBLIC_ACCESS }
+        # - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        # - { path: ^/api/register, roles: PUBLIC_ACCESS }
+        # - { path: ^/api$, roles: PUBLIC_ACCESS }
+        # - { path: ^/api/catalogues, roles: PUBLIC_ACCESS }
+        # - { path: ^/api/produits, roles: PUBLIC_ACCESS, methods:[get]  }
+        # - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
         # - { path: ^/api/burgers, roles: IS_AUTHENTICATED_FULLY, ROLE_GESTIONNAIRE }
 
 when@test:

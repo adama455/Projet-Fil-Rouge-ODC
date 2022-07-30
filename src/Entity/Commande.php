@@ -6,10 +6,12 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Repository\CommandeRepository;
 use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Container6xaZIxQ\getResponseService;
 // use App\Entity\Menu;
 // use ApiPlatform\Core\Annotation\ApiSubresource;
 // use Symfony\Component\HttpFoundation\Response;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert; // Symfony's built-in constraints
@@ -24,61 +26,77 @@ use Symfony\Component\Validator\Constraints as Assert; // Symfony's built-in con
             "method" => "POST",
             'denormalization_context'=>['groups' => ['commande:write']],
             'normalization_context'=>['groups' => ['commande:read']],
-
             "security_post_denormalize" => "is_granted('COM_CREAT', object)",
             "security_post_denormalize_message" => "Only client can add commande.",
         ],
-        "get"
+        "get"=>[
+            'normalization_context'=>['groups' => ['commande:read:all']],
+        ]
     ],
     itemOperations:["put","get"]
 )]
 class Commande
 {
     #[ORM\Id]
-    #[Groups(["commande:read"])]
+    #[Groups(["commande:read",'livraison:write'])]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    // #[ORM\ManyToOne(targetEntity: Zone::class, inversedBy: 'commandes')]
+    #[ORM\ManyToOne(targetEntity: Zone::class, inversedBy: 'commandes')]
+    #[Groups(["commande:read",'commande:write'])]
     // #[Assert\NotNull(['message' => 'il faut une zone.'])]
-    // private $zone;
+    private $zone;
 
-    // #[ORM\ManyToOne(targetEntity: Livraison::class, inversedBy: 'commandes')]
-    // private $livraison;
+    #[ORM\ManyToOne(targetEntity: Livraison::class, inversedBy: 'commandes')]
+    private $livraison;
 
     // #[ORM\OneToOne(targetEntity: Payement::class, cascade: ['persist', 'remove'])]
     // private $payement;
     #[ORM\Column(type: 'string', length: 100)] 
-    #[Groups(["commande:read"])]
+    #[Groups(["commande:read","commande:read:all"])]
     #[Assert\NotNull(['message' => 'numéro commande obligatoire.'])]
     private $reference;
     
     #[ORM\ManyToOne(targetEntity: Client::class, inversedBy: 'commandes')]
     private $client;
     
-    #[ORM\Column(type: 'smallint', options:["default"=>1])] 
-    #[Groups(["commande:read"])]
-    private $etat;
+    // #[ORM\Column(type: 'smallint', options:["default"=>1])] 
+    // #[Groups(["commande:read"])]
+    // private $etat;
     
-    #[ORM\Column(type: 'integer', nullable: true)] 
-    #[Groups(["commande:read"])]
-    private $prixCommande;
-
+    
     #[ORM\OneToMany(mappedBy: 'commande', targetEntity: LigneDeCommande::class,cascade:["persist"])]
-    #[Groups(["commande:write"])]
+    #[Groups(['commande:write','commande:read','commande:read:all'])]
     #[SerializedName("produits")]
+    #[Assert\Count(min: 2, minMessage: 'Le menu doit contenir au moins 2 produit')]
+    #[Assert\Valid]
     private $ligneDeCommandes;
 
+    // #[ORM\Column(type: 'float', nullable: true)] 
+    // #[Groups(["commande:read"])]
+    // private $prixCommande;
+    
     #[ORM\Column(type: 'datetime')]
+    #[Groups(['commande:read','commande:read:all'])]
     private $dateCmde;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private $remise=5/100;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    #[Groups(['commande:read','commande:read:all'])]
+    private $montantCommande;
+
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    private $etat;
 
     public function __construct()
     {
         // $this->produits = new ArrayCollection();
         $this->ligneDeCommandes = new ArrayCollection();
-        $this->etat=1;
-        $this->reference = "REF".time();
+        $this->etat="en attente";
+        $this->reference = "CMD-".time();
         $this->dateCmde = new \DateTime();
     }
 
@@ -87,29 +105,29 @@ class Commande
         return $this->id;
     }
 
-    // public function getZone(): ?Zone
-    // {
-    //     return $this->zone;
-    // }
+    public function getZone(): ?Zone
+    {
+        return $this->zone;
+    }
 
-    // public function setZone(?Zone $zone): self
-    // {
-    //     $this->zone = $zone;
+    public function setZone(?Zone $zone): self
+    {
+        $this->zone = $zone;
 
-    //     return $this;
-    // }
+        return $this;
+    }
 
-    // public function getLivraison(): ?Livraison
-    // {
-    //     return $this->livraison;
-    // }
+    public function getLivraison(): ?Livraison
+    {
+        return $this->livraison;
+    }
 
-    // public function setLivraison(?Livraison $livraison): self
-    // {
-    //     $this->livraison = $livraison;
+    public function setLivraison(?Livraison $livraison): self
+    {
+        $this->livraison = $livraison;
 
-    //     return $this;
-    // }
+        return $this;
+    }
 
     // public function getPayement(): ?Payement
     // {
@@ -135,29 +153,33 @@ class Commande
         return $this;
     }
 
-    public function getEtat(): ?int
-    {
-        return $this->etat;
-    }
+    // public function getEtat(): ?int
+    // {
+    //     return $this->etat;
+    // }
 
-    public function setEtat(int $etat): self
-    {
-        $this->etat = $etat;
+    // public function setEtat(int $etat): self
+    // {
+    //     $this->etat = $etat;
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
-    public function getPrixCommande(): ?int
-    {
-        return $this->prixCommande;
-    }
+    // public function getPrixCommande(): ?float
+    // {
+    //     $prixTotalCmde = 0;
+    //     foreach ($this->getLigneDeCommandes() as $ligneDeCommande) {
+    //         $prixTotalCmde = $prixTotalCmde + $ligneDeCommande->getPrixLCmde();
+    //     }
+    //     return $this->prixCommande = round($prixTotalCmde * (1-$this->getRemise()));
+    // }
 
-    public function setPrixCommande(?int $prixCommande): self
-    {
-        $this->prixCommande = $prixCommande;
+    // public function setPrixCommande(?float $prixCommande): self
+    // {
+    //     $this->prixCommande = $prixCommande;
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
     /**
      * @return Collection<int, LigneDeCommande>
@@ -209,6 +231,47 @@ class Commande
     public function setReference(string $reference): self
     {
         $this->reference = $reference;
+
+        return $this;
+    }
+
+    public function getRemise(): ?float
+    {
+        return $this->remise;
+    }
+
+    public function setRemise(?float $remise): self
+    {
+        $this->remise = $remise;
+
+        return $this;
+    }
+
+    public function getMontantCommande(): ?float
+    {
+        return $this->montantCommande;
+        // $montantCmde = 0;
+        // foreach ($this->getLigneDeCommandes() as $ligneDeCommande) {
+        //     $montantCmde = $montantCmde + $ligneDeCommande->getPrixLCmde();
+        // }
+        // return $this->montantCommande = round($montantCmde * (1-$this->getRemise()));
+    }
+
+    public function setMontantCommande(?float $montantCommande): self
+    {
+        $this->montantCommande = $montantCommande;
+
+        return $this;
+    }
+
+    public function getEtat(): ?string
+    {
+        return $this->etat;
+    }
+
+    public function setEtat(?string $etat): self
+    {
+        $this->etat = $etat;
 
         return $this;
     }

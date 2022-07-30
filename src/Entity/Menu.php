@@ -6,6 +6,7 @@ use Doctrine\Common\Proxy\Proxy;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\MenuRepository;
 use App\Repository\BurgerRepository;
+use App\Controller\MenuProduitController;
 use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,38 +24,39 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
     ],
     //redefinition des ressources
     collectionOperations:[
-        'menu_produit' => [
+        'menu2' => [
             'method' => 'POST',
             'path' => '/menu2',
             'controller' => MenuProduitController::class,
-            'read' => false,
+            'deserialize' => false,
         ],
         "get" =>[
-            'method' => 'get',
-            'status' => Response::HTTP_OK,
-            'normalization_context' =>['groups' => ['produit:read:simple']],
+            // 'method' => 'get',
+            // 'status' => Response::HTTP_OK,
+            'normalization_context' =>['groups' => ['menu:read:all']],
         ],
         "post"=> [
             // 'normalization_context' =>['groups' => ['produit:write:simple']],
-            'denormalization_context' => ['groups' => ['menu:write']],
             'normalization_context' => ['groups' => ['produit:read:all']],
+            'denormalization_context' => ['groups' => ['menu:write']],
             "security_post_denormalize" => "is_granted('PRODUCT_CREAT', object)",
-            "security_post_denormalize_message" => "Only gestionnaire can add menus.",
+            "security_post_denormalize_message" => "Vous avez pas accés a cette ressource.",
         ],
     ],
 
     itemOperations:[
         "put"=> [
-            'denormalization_context' => ['groups' => ['write']],
-            'normalization_context' => ['groups' => ['produit:read:simple']],
-            "security" => "is_granted('PRODUCT_EDIT', object)",
-            "security_message" => "Only gestionnaire can edit frite.",
+            // 'denormalization_context' => ['groups' => ['write']],
+            // 'normalization_context' => ['groups' => ['produit:read:simple']],
+            // "security" => "is_granted('PRODUCT_EDIT', object)",
+            // "security_message" => "Only gestionnaire can edit frite.",
         ],
 
         "get"=>[
-            'method' => 'get',
-            'status' => Response::HTTP_OK,
-            'normalization_context' =>['groups' => ['produit:read:simple']],
+            'normalization_context' =>['groups' => ['menu:read:simple']],
+            // 'method' => 'get',
+            // 'status' => Response::HTTP_OK,
+            // 'normalization_context' =>['groups' => ['produit:read:simple']],
         ]
     ]
 )]
@@ -64,21 +66,37 @@ class Menu extends Produit
     #[Groups(['menu:write'])]
     protected $nom;
     
-    #[Groups(['menu:write'])]
+    // #[Groups(['menu:write'])]
     protected $prix;
 
     #[ORM\OneToMany(mappedBy: 'menu', targetEntity: MenuBurger::class,cascade:['persist'])]
-    #[Groups(['menu:write',"produit:read:all","produit:read:simple"])]
+    #[Groups([
+        'menu:write',"produit:read:all",
+        "produit:read:simple",
+        "menu:read:all",'menu:read:simple'
+    ])]
+    #[Assert\Count(min: 1, minMessage: 'Le menu doit contenir au moins 1 burgers')]
+    #[Assert\Valid]
     #[SerializedName("burgers")]
     private $menuBurgers;
 
     #[ORM\OneToMany(mappedBy: 'menu', targetEntity: MenuTaille::class,cascade:['persist'])]
-    #[Groups(['menu:write',"produit:read:all","produit:read:simple"])]
+    #[Groups([
+        'menu:write',"produit:read:all",
+        "produit:read:simple",
+        "menu:read:all",'menu:read:simple'
+    ])]
+    #[Assert\Count(min: 1, minMessage: 'Le menu doit contenir au moins 1 taille de Boisson')]
+    #[Assert\Valid]
     #[SerializedName("tailles")]
     private $menuTailles;
 
     #[ORM\OneToMany(mappedBy: 'menu', targetEntity: MenuFrite::class,cascade:['persist'])]
-    #[Groups(['menu:write',"produit:read:all","produit:read:simple"])]
+    #[Groups([
+        'menu:write',"produit:read:all",
+        "produit:read:simple",
+        "menu:read:all",'menu:read:simple'
+    ])]
     #[SerializedName("frites")]
     private $menuFrites;
 
@@ -179,4 +197,33 @@ class Menu extends Produit
 
         return $this;
     }
+
+    // les fonctions ajouter pour le controller personnalisé
+    public function addBurger(Burger $burger, int $quantite){
+        $menuB = new MenuBurger();
+        $menuB -> setBurger($burger);//ajouter un burger
+        $menuB -> setMenu($this);//Ajouter un menu
+        $menuB -> setQuatite($quantite);
+        $this -> addMenuBurger($menuB);//ajouter un menuBurger
+
+    }
+
+    public function addTaille(Taille $taille, int $quantite){
+        $menuT = new MenuTaille();
+        $menuT -> setTaille($taille);//ajouter un burger
+        $menuT -> setMenu($this);//Ajouter un menu
+        $menuT -> setQuantite($quantite);
+        $this -> addMenuTaille($menuT);//ajouter un menuBurger
+
+    }
+
+    public function addFrite(Frite $frite, int $quantite){
+        $menuF = new MenuFrite();
+        $menuF -> setFrite($frite);//ajouter un burger
+        $menuF -> setMenu($this);//Ajouter un menu
+        $menuF -> setQuantite($quantite);
+        $this -> addMenuFrite($menuF);//ajouter un menuBurger
+
+    }
+
 }

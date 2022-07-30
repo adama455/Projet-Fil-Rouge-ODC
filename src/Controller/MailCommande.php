@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Validator\Constraints\DateTime;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-class MailController extends AbstractController
+class MailCommande extends AbstractController
 {
     public function __construct(EntityManagerInterface $manager){
         $this->manager = $manager;
@@ -30,13 +30,13 @@ class MailController extends AbstractController
 
 
         if ($user->isIsEnable()){
-            return new JsonResponse(['message' => 'Votre Compte a été deja activer'], 400);
+            return new JsonResponse(['message' => 'Votre Commande a été deja activer'], 400);
         }
         if ($user->getExpireAt() < new \DateTime()){
             return new JsonResponse(['error' => 'Invalid token'],Response::HTTP_BAD_REQUEST);
         }
         $user->setIsEnable(true);
         $manager->flush();
-        return new JsonResponse(['message'=> 'Votre Compte a été activer avec succés'],Response::HTTP_OK);
+        return new JsonResponse(['message'=> 'Votre Commande a été activer avec succés'],Response::HTTP_OK);
     }   
 }

@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 // use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\LigneDeCommandeRepository;
@@ -20,7 +22,7 @@ class LigneDeCommande
     #[ORM\Column(type: 'integer')]
     private $quantiteCmde;
 
-    #[Groups(["commande:write"])]
+    #[Groups(["commande:write",'commande:read'])]
     #[ORM\ManyToOne(targetEntity: Produit::class, inversedBy: 'ligneDeCommandes')]
     private $produit;
 
@@ -28,7 +30,16 @@ class LigneDeCommande
     private $commande;
 
     #[ORM\Column(type: 'float')]
+    #[Groups(['commande:read'])]
     private $prixLCmde;
+
+    #[ORM\ManyToMany(targetEntity: TailleBoisson::class, mappedBy: 'ligneDeCommande')]
+    private $tailleBoissons;
+
+    public function __construct()
+    {
+        $this->tailleBoissons = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -58,13 +69,14 @@ class LigneDeCommande
 
         return $this;
     }
-    public function prixLCommande(){
-        return $this->produit->getPrix()*$this->quantiteProduit;
-    }
+    // public function prixLCommande(){
+    //     return $this->produit->getPrix()*$this->quantiteProduit;
+    // }
 
     public function getPrixLCmde(): ?float
     {
         return $this->prixLCmde;
+        // return $this->prixLCmde = $this->getProduit()->getPrix()*$this->getQuantiteCmde();
     }
 
     public function setPrixLCmde(float $prixLCmde): self
@@ -85,4 +97,32 @@ class LigneDeCommande
 
         return $this;
     }
+
+    /**
+     * @return Collection<int, TailleBoisson>
+     */
+    public function getTailleBoissons(): Collection
+    {
+        return $this->tailleBoissons;
+    }
+
+    public function addTailleBoisson(TailleBoisson $tailleBoisson): self
+    {
+        if (!$this->tailleBoissons->contains($tailleBoisson)) {
+            $this->tailleBoissons[] = $tailleBoisson;
+            $tailleBoisson->addLigneDeCommande($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTailleBoisson(TailleBoisson $tailleBoisson): self
+    {
+        if ($this->tailleBoissons->removeElement($tailleBoisson)) {
+            $tailleBoisson->removeLigneDeCommande($this);
+        }
+
+        return $this;
+    }
+
 }

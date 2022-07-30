@@ -9,7 +9,8 @@ use ApiPlatform\Core\Annotation\ApiResource;
     collectionOperations:[
         "complements"=>[
             "method"=>"GET",
-            "path"=>"/complements"
+            "path"=>"/complements",
+            'normalization_context'=>['groups' => ['complement:read:all']]
     
         ]
     ],
