@@ -1,5 +1,6 @@
 <?php
 namespace App\Entity;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 #[ApiResource(
     attributes: [
@@ -11,12 +12,20 @@ use ApiPlatform\Core\Annotation\ApiResource;
             "method"=>"GET",
             "path"=>"/complements",
             'normalization_context'=>['groups' => ['complement:read:all']]
-    
+        ],
+
+        "GET"=>[
+            'normalization_context'=>['groups' => ['complement:read:all']]
         ]
     ],
-    itemOperations:[]
+    itemOperations:[
+        
+    ]
 )]
 class Complements
 {
-    
+    #[ApiProperty(
+        identifier:true
+    )]
+    private $id;
 }

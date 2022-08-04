@@ -53,8 +53,8 @@ class Taille
     #[ORM\Column(type: 'smallint',options:["default"=>1])]
     private $etat;
 
-    #[ORM\ManyToMany(targetEntity: Boisson::class, inversedBy: 'tailles')]
-    private $boissons;
+    // #[ORM\ManyToMany(targetEntity: Boisson::class, inversedBy: 'tailles')]
+    // private $boissons;
 
     // #[Groups(["produit:read:all"])]
     #[ORM\OneToMany(mappedBy: 'taille', targetEntity: MenuTaille::class)]

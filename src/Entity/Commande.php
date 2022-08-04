@@ -25,12 +25,12 @@ use Symfony\Component\Validator\Constraints as Assert; // Symfony's built-in con
         "post"=>[
             "method" => "POST",
             'denormalization_context'=>['groups' => ['commande:write']],
-            'normalization_context'=>['groups' => ['commande:read']],
+            'normalization_context'=>['groups' => ['commande:read:all']],
             "security_post_denormalize" => "is_granted('COM_CREAT', object)",
             "security_post_denormalize_message" => "Only client can add commande.",
         ],
         "get"=>[
-            'normalization_context'=>['groups' => ['commande:read:all']],
+            'normalization_context'=>['groups' => ['commande:read:simple']],
         ]
     ],
     itemOperations:["put","get"]
@@ -38,13 +38,21 @@ use Symfony\Component\Validator\Constraints as Assert; // Symfony's built-in con
 class Commande
 {
     #[ORM\Id]
-    #[Groups(["commande:read",'livraison:write'])]
+    #[Groups([
+        "commande:read:all",
+        'livraison:write',
+        "commande:read:simple",
+    ])]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private $id;
 
     #[ORM\ManyToOne(targetEntity: Zone::class, inversedBy: 'commandes')]
-    #[Groups(["commande:read",'commande:write'])]
+    #[Groups([
+        "commande:read:all",
+        'commande:write',
+        "commande:read:simple",
+    ])]
     // #[Assert\NotNull(['message' => 'il faut une zone.'])]
     private $zone;
 
@@ -54,7 +62,10 @@ class Commande
     // #[ORM\OneToOne(targetEntity: Payement::class, cascade: ['persist', 'remove'])]
     // private $payement;
     #[ORM\Column(type: 'string', length: 100)] 
-    #[Groups(["commande:read","commande:read:all"])]
+    #[Groups([
+        "commande:read:all",
+        "commande:read:simple",
+    ])]
     #[Assert\NotNull(['message' => 'numéro commande obligatoire.'])]
     private $reference;
     
@@ -67,10 +78,14 @@ class Commande
     
     
     #[ORM\OneToMany(mappedBy: 'commande', targetEntity: LigneDeCommande::class,cascade:["persist"])]
-    #[Groups(['commande:write','commande:read','commande:read:all'])]
     #[SerializedName("produits")]
     #[Assert\Count(min: 2, minMessage: 'Le menu doit contenir au moins 2 produit')]
     #[Assert\Valid]
+    #[Groups([
+        'commande:write',
+        'commande:read:all',
+        "commande:read:simple",
+    ])]
     private $ligneDeCommandes;
 
     // #[ORM\Column(type: 'float', nullable: true)] 
@@ -78,14 +93,20 @@ class Commande
     // private $prixCommande;
     
     #[ORM\Column(type: 'datetime')]
-    #[Groups(['commande:read','commande:read:all'])]
+    #[Groups([
+        'commande:read:all',
+        "commande:read:simple",
+    ])]
     private $dateCmde;
 
     #[ORM\Column(type: 'float', nullable: true)]
     private $remise=5/100;
 
     #[ORM\Column(type: 'float', nullable: true)]
-    #[Groups(['commande:read','commande:read:all'])]
+    #[Groups([
+        'commande:read:all',
+        "commande:read:simple",
+    ])]
     private $montantCommande;
 
     #[ORM\Column(type: 'string', length: 100, nullable: true)]

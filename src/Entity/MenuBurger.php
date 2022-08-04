@@ -22,7 +22,7 @@ class MenuBurger
 
     #[ORM\Column(type: 'integer', nullable: true)]  
     #[Groups([
-        'menu:write',"produit:read:all",
+        "menu:write","produit:read:all",
         "produit:read:simple",
         "menu:read:all",'menu:read:simple'
     ])]

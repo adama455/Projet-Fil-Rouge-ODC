@@ -20,7 +20,7 @@ class TailleBoisson
 
     #[Groups([
         'produit:write',"produit:read:all",
-        'boisson:read:all','boisson:write',
+        // 'boisson:read:all','boisson:write',
         "menu:read:all",'menu:read:simple'
     ])]
     #[ORM\ManyToOne(targetEntity: Boisson::class, inversedBy: 'tailleBoissons')]

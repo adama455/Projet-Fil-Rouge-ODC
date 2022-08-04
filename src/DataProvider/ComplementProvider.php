@@ -25,8 +25,8 @@ class ComplementProvider implements ContextAwareCollectionDataProviderInterface,
     {
         // dd($context[]=$this->boissonR->findAll());
         return $context=[
-            $this->boissonR->findAll(),
-            $this->friteR->findAll()                                                
+            "boissons"=> $this->boissonR->findAll(),
+            "frites" => $this->friteR->findAll()                                                
         ];
     }
     

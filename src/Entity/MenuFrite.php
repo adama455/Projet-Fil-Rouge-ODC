@@ -8,7 +8,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: MenuFriteRepository::class)]
-// #[ApiResource()]
+#[ApiResource()]
 class MenuFrite
 {
     #[ORM\Id]

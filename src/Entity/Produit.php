@@ -54,10 +54,12 @@ class Produit
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[Groups([
-        "menu:write","produit:read:simple",
+        "produit:read:simple",
         "produit:read:all",'boisson:read:all',
         "catalogue:read:all",
-        "menu:read:all",'menu:read:simple'
+        "menu:read:all",'menu:read:simple',
+        'complement:read:all',
+        "commande:read:all",
     ])]
     #[ORM\Column(type: 'integer')]
     protected $id;
@@ -65,8 +67,11 @@ class Produit
     #[Groups([
         "produit:read:simple","produit:write",
         "produit:read:all",'boisson:read:all',
-        'boisson:write',
-        "menu:read:all",'menu:read:simple'
+        'boisson:write',"menu:write",
+        "menu:read:all",'menu:read:simple',
+        'complement:read:all',
+        "commande:read:all",
+        "commande:read:simple",
     ])]
     #[ORM\Column(type: 'string', length: 100)]
     // #[Assert\NotBlank(['message' => 'le nom est obligatoire',"catalogue:read:all"])]
@@ -75,7 +80,10 @@ class Produit
     #[Groups([
         "produit:read:simple","produit:write",
         "produit:read:all","catalogue:read:all",
-        "menu:read:all",'menu:read:simple'
+        "menu:read:all",'menu:read:simple',
+        'complement:read:all','boisson:read:all',
+        "commande:read:all",
+        "commande:read:simple",
     ])]
     // #[Assert\NotBlank(['message' => 'le prix est obligatoire',])]
     #[ORM\Column(type: 'float')]
@@ -91,7 +99,10 @@ class Produit
     #[Groups(["produit:write","produit:read:simple",
     'boisson:read:all','boisson:write',
     "produit:read:all","catalogue:read:all",
-    "menu:read:all",'menu:read:simple'
+    "menu:read:all",'menu:read:simple',
+    'complement:read:all',
+    "commande:read:all",
+    "commande:read:simple",
     ])]
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $description;
@@ -108,7 +119,10 @@ class Produit
         "produit:read:simple","produit:read:all",
         'boisson:read:all','boisson:write',
         "catalogue:read:all",
-        "menu:read:all",'menu:read:simple'
+        "menu:read:all",'menu:read:simple',
+        'complement:read:all',
+        "commande:read:all",
+        "commande:read:simple",
     ])]
     private $image;
 

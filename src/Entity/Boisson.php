@@ -52,7 +52,7 @@ use Symfony\Component\Validator\Constraints as Assert; // Symfony's built-in con
         ]
     ]
 )]
-class Boisson extends produit
+class Boisson extends Produit
 {
     #[ORM\OneToMany(mappedBy: 'boisson', targetEntity: TailleBoisson::class,cascade:['persist'])]
     #[Groups(["boisson:write","boisson:read:all"])]

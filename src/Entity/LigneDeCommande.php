@@ -18,11 +18,19 @@ class LigneDeCommande
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[Groups(["commande:write"])]
+    #[Groups([
+        "commande:read:all",
+        'commande:write',
+        "commande:simple",
+    ])]
     #[ORM\Column(type: 'integer')]
     private $quantiteCmde;
 
-    #[Groups(["commande:write",'commande:read'])]
+    #[Groups([
+        'commande:read:all',
+        'commande:write',
+        "commande:simple",
+    ])]
     #[ORM\ManyToOne(targetEntity: Produit::class, inversedBy: 'ligneDeCommandes')]
     private $produit;
 
@@ -30,7 +38,7 @@ class LigneDeCommande
     private $commande;
 
     #[ORM\Column(type: 'float')]
-    #[Groups(['commande:read'])]
+    #[Groups(['commande:read:all'])]
     private $prixLCmde;
 
     #[ORM\ManyToMany(targetEntity: TailleBoisson::class, mappedBy: 'ligneDeCommande')]
